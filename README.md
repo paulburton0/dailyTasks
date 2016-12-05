@@ -27,9 +27,9 @@ dt edit    Opens the dailytasks.txt file in an editor.
 
 dt ls    Prints the entire dailytasks.txt file.
 
-Note that times are in the format HH:MM(AM|PM). For example, to add a task that starts at 10:00 in the morning and ends at 1:00 in the afternoon:
+Note that times are in the format HH:MM(AM|PM). For single digit hours, the leading zero must be included. For example, to add a task that starts at 10:00 in the morning and ends at 1:00 in the afternoon:
 
-    dt add 10:00AM 1:00PM SomeProject "Developed new module"
+    dt add 10:00AM 01:00PM SomeProject "Developed new module"
 
 In addition, dates are in the format YYYY-MM-DD, so to run a report for a project on December 5, 2016:
 
