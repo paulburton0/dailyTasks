@@ -1,10 +1,13 @@
-#dailyTasks: A task tracker
+# dailyTasks: A task tracker
+
 DailyTasks is a command line tool that helps keep track of time spent on multiple tasks throughout the day. Tasks are organized by project. You can create a report of the day's time spent on all projects,or a single project.
 
-#Installation and Setup
+# Installation and Setup
+
 To use dailyTasks, just put in in your $PATH. There are a few configuration options that you should set up at the top of the script.
 
-#Usage
+# Usage
+
 dt report [regex]    Prints a report based on the regular expression.
 
 dt add [begin] [end] [project] [task]    Adds a new task.
