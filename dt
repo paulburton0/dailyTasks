@@ -1,7 +1,7 @@
 #!/bin/bash
 
-bak="$HOME/Dropbox/dailytasks.bak"
-file="$HOME/Dropbox/dailytasks.txt"
+bak="$HOME/Nextcloud/DailyTasks/dailytasks.bak"
+file="$HOME/Nextcloud/DailyTasks/dailytasks.txt"
 tailnum='10'
 default_action="tail -${tailnum} $file"
 
@@ -12,118 +12,129 @@ fi
 action="$1"
 
 duration () {
-    num=$1
+    num="$1"
     if [ -z "$(grep "^$1 " "$file")" ]
     then
         echo "Task ID $1 does not exist."
         exit
     fi
-    item=$(grep ^$num "$file")
-    start=$(echo $item | cut -d' ' -f3)
-    starthours=$(echo $start | cut -c 1-2)
-    startmins=$(echo $start | cut -c 4-5)
-    startampm=$(echo $start | cut -c 6-7)
-    end=$(echo $item | cut -d' ' -f4)
-    endhours=$(echo $end | cut -c 1-2)
-    endmins=$(echo $end | cut -c 4-5)
-    endampm=$(echo $end | cut -c 6-7)
-    if [ $startampm = 'PM' ] && [ $starthours != '12' ]
+    item="$(grep ^$num $file)"
+    start="$(echo $item | cut -d' ' -f3)"
+    starthours="$(echo $start | cut -c 1-2)"
+    startmins="$(echo $start | cut -c 4-5)"
+    startampm="$(echo $start | cut -c 6-7)"
+    end="$(echo $item | cut -d' ' -f4)"
+    endhours="$(echo $end | cut -c 1-2)"
+    endmins="$(echo $end | cut -c 4-5)"
+    endampm="$(echo $end | cut -c 6-7)"
+    if [ "$startampm" = 'PM' ] && [ "$starthours" != '12' ]
     then
-        starthours=$((10#$starthours+12))
+        starthours="$((10#$starthours+12))"
     fi
 
-    if [ $endampm = 'PM' ] && [ $endhours != '12' ]
+    if [ "$endampm" = 'PM' ] && [ "$endhours" != '12' ]
     then
-        endhours=$((10#$endhours+12))
+        endhours="$((10#$endhours+12))"
     fi
-    if [ $startmins -gt $endmins ]
+
+    if [ "$startmins" -gt "$endmins" ]
     then
-        endmins=$((10#$endmins+60))
-        endhours=$((10#$endhours-1))
+        endmins="$((10#$endmins+60))"
+        endhours="$((10#$endhours-1))"
     fi
-    hours=$((10#$endhours-10#$starthours))
-    mins=$((10#$endmins-10#$startmins))
-    mins=${mins#-}
-    if [ $(($mins%15)) -lt 8 ]
+
+    hours="$((10#$endhours-10#$starthours))"
+    mins="$((10#$endmins-10#$startmins))"
+    mins="${mins#-}"
+    
+    if [ "$(($mins%15))" -lt 8 ]
     then
-        mins=$(($mins-$(($mins%15))))
+        mins="$(($mins-$(($mins%15))))"
     else
-        mins=$(($mins+$((15-$(($mins%15))))))
+        mins="$(($mins+$((15-$(($mins%15))))))"
     fi
-    printf "%s:%02d\n" $hours $mins
+    
+    printf "%s:%02d\n" "$hours" "$mins"
 }
 
 project () {
-    date=$1
-    project=$2
+    date="$1"
+    project="$2"
     while read item;
     do
-        if [ $(echo "$item" | cut -d' ' -f5) = $project ]
+        if [ "$(echo $item | cut -d' ' -f5)" = "$project" ]
         then
-            num=$(echo $item | cut -d' ' -f1)
-            dur=$(duration $item)
-            durhour=$(echo $dur | cut -d':' -f1)
-            hour=$(($hour+10#$durhour))
-            durmin=$(echo $dur | cut -d':' -f2)
-            min=$(($min+10#$durmin))
+            num="$(echo $item | cut -d' ' -f1)"
+            dur="$(duration $item)"
+            durhour="$(echo $dur | cut -d':' -f1)"
+            hour="$(($hour+10#$durhour))"
+            durmin="$(echo $dur | cut -d':' -f2)"
+            min="$(($min+10#$durmin))"
         fi
     done < <(grep "${date}" "$file")
+    
     let "hour+=$((10#$min/60))"
-    min=$((10#$min%60))
-    if [ $(($min%15)) -lt 8 ]
+    
+    min="$((10#$min%60))"
+    
+    if [ "$(($min%15))" -lt 8 ]
     then
-        min=$(($min-$(($min%15))))
+        min="$(($min-$(($min%15))))"
     else
-        min=$(($min+$((15-$(($min%15))))))
+        min="$(($min+$((15-$(($min%15))))))"
     fi
-    if [ $min -eq 60 ]
+    
+    if [ "$min" -eq 60 ]
     then
         min='00'
         let "hour+=1"
     fi
+    
     hourdec=$(($(($min*100))/60))
+    
     echo ${hour}.${hourdec}
 }
-
-
 
 case "$action" in
 'help')
     cat <<HelpText
     dt report [regex]
-        Prints a report based on the regular expression.
+        Prints a report based on the regular expression
 
     dt add [begin] [end] [project] [task]
-        Adds a new task.
+        Adds a new task. Begin and End times must be in HH:MM(AM|PM) format
+        Project must be one word only (no whitespace)
+        Task must be quoted if it is more than one word (i.e. if it contains whitespace)
 
     dt rm [task number]
-        Removes the task with the given number.
+        Removes the task with the given number
 
     dt start [task number]
-        Changes the start time for the given task number.
+        Changes the start time for the given task number
 
     dt end [task number]
-        Changes the end time for the given task number.
+        Changes the end time for the given task number
 
     dt next [end] [project] [task]
-        Adds a new task with the same start time as the last task's end time.
+        Adds a new task with the same start time as the last task's end time
 
     dt duration [task number]
-        Prints the duration of the given task.
+        Prints the duration of the given task
 
     dt project [date] [project]
-        Prints the amount of time worked on the given project for the given date.
+        Prints the amount of time worked on the given project for the given date
 
     dt day [date]
-        Prints a breakdown of time spent on each project in the given day, with a total for the day.
+        Prints a breakdown of time spent on each project in the given day, with a total for the day
+        Omit date for today's breakdown
 
     dt edit
-        Opens the dailytasks.txt file in an editor.
+        Opens the dailytasks.txt file in an editor
 
     dt ls
-        Prints the entire dailytasks.txt file.
+        Prints the entire dailytasks.txt file
 
-    "now" can be used for "begin" and "end" parameters in the add, end, and next actions.
+    "now" can be used for "begin" and "end" parameters in the "add", "end", and "next" actions
 HelpText
     ;;
 'report')
@@ -135,6 +146,16 @@ HelpText
     end="$3"
     proj="$4"
     task="$5"
+
+    if ! [[ "$begin" =~ ^[0-1][0-9]:[0-5][0-9](AM|PM)$ ]]; then
+        echo "Begin time must be in HH:MM(A|P)M format."
+        exit
+    fi
+    if ! [[ "$end" =~ ^[0-1][0-9]:[0-5][0-9](AM|PM)$ ]]; then
+        echo "End time must be in HH:MM(A|P)M format."
+        exit
+    fi
+
     if [ "$begin" = 'now' ]
     then
         begin="$(date +%I:%M%p)"
@@ -149,16 +170,20 @@ HelpText
     echo "$newtask"
     ;;
 'rm')
-    num=$2
+    num="$2"
     grep -v "^$2 " "$file" > "$bak"
     cp "$bak" "$file"
     ;;
 'start')
     num="$2"
-    begin=$3
+    begin="$3"
     if [ "$begin" = 'now' ]
     then
         begin="$(date +%I:%M%p)"
+    fi
+    if ! [[ "$begin" =~ ^[0-1][0-9]:[0-5][0-9](AM|PM)$ ]]; then
+        echo "Begin time must be in HH:MM(A|P)M format."
+        exit
     fi
     if [ -z "$(grep "^$2 " "$file")" ]
     then
@@ -171,10 +196,14 @@ HelpText
     ;;
 'end')
     num="$2"
-    end=$3
+    end="$3"
     if [ "$end" = 'now' ]
     then
         end="$(date +%I:%M%p)"
+    fi
+    if ! [[ "$end" =~ ^[0-1][0-9]:[0-5][0-9](AM|PM)$ ]]; then
+        echo "End time must be in HH:MM(A|P)M format."
+        exit
     fi
     if [ -z "$(grep "^$2 " "$file")" ]
     then
@@ -186,7 +215,7 @@ HelpText
     tail -${tailnum} "$file"
     ;;
 'next')
-    end=$2
+    end="$2"
     if [ "$end" = 'now' ]
     then
         end="$(date +%I:%M%p)"
@@ -200,29 +229,29 @@ HelpText
     tail -${tailnum} "$file"
     ;;
 'duration')
-    duration $2
+    duration "$2"
     ;;
 'project')
-    date=$2
-    project=$3
-    project $date $project
+    date="$2"
+    project="$3"
+    project "$date" "$project"
     ;;
 'day')
-    if [ -z $2 ]; then
-        date=$(date -d today +%F)
+    if [ -z "$2" ]; then
+        date="$(date -d today +%F)"
     else
-        date=$2
+        date="$2"
     fi
     declare -a projects
     while read item 
     do
-        project=$(echo $item | cut -d' ' -f5)
+        project="$(echo $item | cut -d' ' -f5)"
         projects+=($project)
     done < <(grep "${date}" "$file")
     projects_uniq=($(printf "%s\n" "${projects[@]}" | sort -u)); 
     for proj in "${projects_uniq[@]}"
     do
-        duration=$(project $date $proj)
+        duration="$(project $date $proj)"
         let "tot_hours+=$(echo $duration | cut -d'.' -f1)"
         let "tot_dec+=$(echo $duration | cut -d'.' -f2)"
         echo "$proj: $duration"
@@ -242,4 +271,3 @@ HelpText
     $default_action
     ;;
 esac
-
