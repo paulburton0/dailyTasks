@@ -10,7 +10,7 @@ To use dailyTasks, just put in in your $PATH. There are a few configuration opti
 
 dt report [regex]    Prints a report based on the regular expression.
 
-dt add [begin] [end] [project] [task]    Adds a new task.
+dt add [start time] [end time] [project] [task]    Adds a new task.
 
 dt rm [task number]    Removes the task with the given number.
 
@@ -18,19 +18,19 @@ dt start [task number]    Changes the start time for the given task number.
 
 dt end [task number]    Changes the end time for the given task number.
 
-dt next [end] [project] [task]    Adds a new task with the same start time as the last task's end time.
+dt next [end time] [project] [task]    Adds a new task with the same start time as the last task's end time.
 
 dt duration [task number]    Prints the duration of the given task.
 
-dt project [date] [project]    Prints the amount of time worked on the given project for the given date.
+dt project [project] [date]    Prints the amount of time worked on the given project for the given date. Omit date for today.
 
-dt day [date]    Prints a breakdown of time spent on each project in the given day, with a total for the day.
+dt day [date]    Prints a breakdown of time spent on each project in the given day, with a total for the day. Omit date for today.
 
 dt edit    Opens the dailytasks.txt file in an editor.
 
 dt ls    Prints the entire dailytasks.txt file.
 
-Note that times are in the format HH:MM(AM|PM). For single digit hours, the leading zero must be included. For example, to add a task that starts at 10:00 in the morning and ends at 1:00 in the afternoon:
+Note that times are in the format HH:MM(AM|PM) with *no* whitespace. For single digit hours, the leading zero *must* be included. For example, to add a task that starts at 10:00 in the morning and ends at 1:00 in the afternoon:
 
     dt add 10:00AM 01:00PM SomeProject "Developed new module"
 
